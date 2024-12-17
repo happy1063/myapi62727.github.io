@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API для создания картинки</title>
+</head>
+<body>
+    <h1>Создание картинки через API</h1>
+    
+    <form id="data-form">
+        <label for="size-x">Размер X:</label>
+        <input type="number" id="size-x" value="2" required><br>
 
+        <label for="size-y">Размер Y:</label>
+        <input type="number" id="size-y" value="2" required><br>
+
+        <label for="data">Данные (например, {255,255,255}):</label>
+        <input type="text" id="data" value="{255,255,255},{255,255,255},{255,255,255},{255,255,255}" required><br>
+
+        <button type="submit">Создать изображение</button>
+    </form>
+
+    <h2>Результат:</h2>
+    <img id="image-result" style="border: 1px solid black;" alt="Сгенерированное изображение"/>
+
+    <script>
+        // Обработчик формы
+        document.getElementById('data-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const sizeX = parseInt(document.getElementById('size-x').value);
+            const sizeY = parseInt(document.getElementById('size-y').value);
+            const data = document.getElementById('data').value;
+
+            const parsedData = parseData(data);
+
+            // Формируем JSON для отправки
+            const requestData = {
+                "size-x": sizeX,
+                "size-y": sizeY,
+                "data": parsedData
+            };
+
+            // Отправляем запрос через fetch (POST)
+            fetch('https://your-api-url.com/create-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Устанавливаем картинку в элемент img
+                const img = document.getElementById('image-result');
+                img.src = data.imageUrl; // Убедитесь, что сервер возвращает URL изображения
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        });
+
+        function parseData(data) {
+            const rows = data.split('},{').map(row => {
+                return row.replace(/[{}]/g, '').split(',').map(Number);
+            });
+            return rows;
+        }
+    </script>
+</body>
+</html>
