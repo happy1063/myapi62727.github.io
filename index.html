@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API для создания картинки</title>
+    <title>Создание изображения через JSON API</title>
 </head>
 <body>
-    <h1>Создание картинки через API</h1>
+    <h1>Создание картинки через POST-запрос</h1>
     
     <form id="data-form">
         <label for="size-x">Размер X:</label>
@@ -16,7 +16,7 @@
         <input type="number" id="size-y" value="2" required><br>
 
         <label for="data">Данные (например, {255,255,255}):</label>
-        <input type="text" id="data" value="{255,255,255},{255,255,255},{255,255,255},{255,255,255}" required><br>
+        <input type="text" id="data" value="{255,0,0},{0,255,0},{0,0,255},{255,255,0}" required><br>
 
         <button type="submit">Создать изображение</button>
     </form>
@@ -43,22 +43,7 @@
             };
 
             // Отправляем запрос через fetch (POST)
-            fetch('https://your-api-url.com/create-image', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Устанавливаем картинку в элемент img
-                const img = document.getElementById('image-result');
-                img.src = data.imageUrl; // Убедитесь, что сервер возвращает URL изображения
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-            });
+            generateImage(requestData);
         });
 
         function parseData(data) {
@@ -66,6 +51,31 @@
                 return row.replace(/[{}]/g, '').split(',').map(Number);
             });
             return rows;
+        }
+
+        function generateImage(data) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const sizeX = data["size-x"];
+            const sizeY = data["size-y"];
+            canvas.width = sizeX;
+            canvas.height = sizeY;
+
+            // Рисуем картину на основе данных
+            for (let y = 0; y < sizeY; y++) {
+                for (let x = 0; x < sizeX; x++) {
+                    const color = data["data"][y * sizeX + x]; // Получаем цвет
+                    ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                    ctx.fillRect(x, y, 1, 1); // Рисуем пиксель
+                }
+            }
+
+            // Преобразуем в формат Base64 и отправляем в ответ
+            const imageUrl = canvas.toDataURL('image/png');
+
+            // Показываем картинку в элементе img
+            const img = document.getElementById('image-result');
+            img.src = imageUrl;
         }
     </script>
 </body>
