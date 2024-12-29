@@ -82,26 +82,28 @@
     </div>
 
     <script>
+        function formatObject(obj, indent = 1) {
+            const entries = Object.entries(obj);
+            return entries.map(([key, value]) => {
+                const padding = ' '.repeat(indent * 4); // Добавляем отступы
+                if (typeof value === 'object' && value !== null) {
+                    return `${padding}[\"${key}\"] = {\n${formatObject(value, indent + 1)}\n${padding}}`;
+                } else {
+                    return `${padding}[\"${key}\"] = \"${value}\"`;
+                }
+            }).join(',\n');
+        }
+
         function translateToStarfall() {
             const input = document.getElementById('inputJson').value.trim();
             let output = '';
 
             try {
                 const parsed = JSON.parse(input); // Парсим JSON
-                const entries = Object.entries(parsed); // Получаем ключ-значения
 
-                // Формируем строку Starfall с обработкой вложенных объектов
-                output = entries.map(([key, value]) => {
-                    if (typeof value === 'object') {
-                        // Если значение - объект, то выводим его в виде строки
-                        return `[\"${key}\"] = \"${JSON.stringify(value)}\"`;
-                    } else {
-                        // Если это просто значение, выводим его как есть
-                        return `[\"${key}\"] = \"${value}\"`;
-                    }
-                }).join(',\n');
+                // Формируем строку Starfall
+                output = `{\n${formatObject(parsed, 1)}\n}`;
 
-                output = `{\n${output}\n}`;
             } catch (error) {
                 output = 'Invalid JSON! Please check your input.';
             }
